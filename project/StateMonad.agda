@@ -30,15 +30,17 @@ state-functor S = record {
   F-resp-≈     = λ {A} {B} {f} {g} → λ eq {st} 
                  → fun-ext (λ s → cong (λ b → proj₁ (st s) , b) eq) }
 
-state-η : (S : Set) → NaturalTransformation Categories.Functor.id (state-functor S)
+state-η : (S : Set) → NaturalTransformation 
+          Categories.Functor.id 
+          (state-functor S)
 state-η S = record { 
   η           = λ X → λ x → λ s → s , x; 
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }  
 
 state-µ : (S : Set) → NaturalTransformation 
-                       (state-functor S ∘F state-functor S) 
-                       (state-functor S)
+          (state-functor S ∘F state-functor S) 
+          (state-functor S)
 state-µ S = record { 
   η           = η-aux ;
   commute     = λ _ → refl ; 
