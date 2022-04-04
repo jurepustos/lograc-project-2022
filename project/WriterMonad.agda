@@ -1,39 +1,27 @@
 module WriterMonad where
 
-open import Level renaming (zero to lzero; suc to lsuc)
+open import Level                 renaming (zero to lzero; suc to lsuc)
 open import Categories.Category
 open import Categories.Category.Instance.Sets
 open import Categories.Monad
 open import Categories.Functor
 open import Categories.NaturalTransformation
 
-open import Function using (id; _∘_)
+open import Function              using (id; _∘_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq                          using (_≡_; refl; sym; trans; cong; cong₂; subst)
-open Eq.≡-Reasoning              using (begin_; _≡⟨⟩_; step-≡; _∎)
+open Eq                           using (_≡_; refl; sym; trans; cong; cong₂; subst)
+open Eq.≡-Reasoning               using (begin_; _≡⟨⟩_; step-≡; _∎)
 
-open import Data.Product using (Σ; _,_; proj₁; proj₂; Σ-syntax; _×_)
+open import Data.Product          using (Σ; _,_; proj₁; proj₂; Σ-syntax; _×_)
+
+open import SetMonoid             using (Monoid)
 
 open import Axiom.Extensionality.Propositional using (Extensionality)
 postulate fun-ext : ∀ {a b} → Extensionality a b
 
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
-
-record Monoid {l} : Set (lsuc l) where
-  infixl 7 _⊕_
-  field
-    -- carrier type of the monoid
-    M       : Set l
-    -- identity element (unicode with `\epsilon`)
-    ε       : M
-    -- binary operation (unicode with `\cdot`)
-    _⊕_     : M → M → M
-    -- monoid laws
-    ε-left  : (m : M) → ε ⊕ m ≡ m
-    ε-right : (m : M) → m ⊕ ε ≡ m
-    ⊕-assoc : (m₁ m₂ m₃ : M) → (m₁ ⊕ m₂) ⊕ m₃ ≡ m₁ ⊕ (m₂ ⊕ m₃)
 
 writer-functor : (P : Monoid {lzero}) → Endofunctor Sets0
 writer-functor P = record { 
@@ -75,7 +63,7 @@ writer-monad P = record {
   where 
     open Monoid P
 
-    writer-assoc : {X : Set} {w : Σ M (λ w₁ → Σ M (λ w₂ → Σ M (λ w₃ → X)))} →
+    writer-assoc : {X : Set} {w : Σ M (λ p → Σ M (λ p' → Σ M (λ p'' → X)))} →
                    (proj₁ w ⊕ (proj₁ (proj₂ w) ⊕ proj₁ (proj₂ (proj₂ w))) ,
                    proj₂ (proj₂ (proj₂ w)))
                    ≡
