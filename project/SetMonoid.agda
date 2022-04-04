@@ -18,3 +18,13 @@ record Monoid {l} : Set (lsuc l) where
     ε-left  : (m : M) → ε ⊕ m ≡ m
     ε-right : (m : M) → m ⊕ ε ≡ m
     ⊕-assoc : (m₁ m₂ m₃ : M) → (m₁ ⊕ m₂) ⊕ m₃ ≡ m₁ ⊕ (m₂ ⊕ m₃)
+
+record RightAct {l} (Mon : Monoid {l}) (X : Set) : Set (lsuc l) where
+  open Monoid Mon
+
+  infixl 6 _↓_
+  field
+    _↓_          : X → M → X
+    ε-identity   : (x : X) → x ↓ ε ≡ x
+    homomorphism : (m₁ m₂ : M) (x : X) → x ↓ m₁ ⊕ m₂ ≡ x ↓ m₁ ↓ m₂
+
