@@ -21,26 +21,41 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
--- prod-ext : {A B : Set} {x : B} {f g : A → B} 
---            → f x ≡ g x
---            → ?
-
 state-functor : (S : Set) → Endofunctor Sets0
 state-functor S = record { 
   F₀           = λ X → S → S × X ;
-  F₁           = λ f st s → proj₁ (st s) , f (proj₂ (st s)) ; 
+  F₁           = λ f st → λ s → proj₁ (st s) , f (proj₂ (st s)) ; 
   identity     = refl ; 
   homomorphism = refl ; 
-  F-resp-≈     = λ {A} {B} {f} {g} → λ eq {st} → fun-ext λ s 
-                 → cong (λ b → ((proj₁ (st s))) , b) eq }
+  F-resp-≈     = λ {A} {B} {f} {g} → λ eq {st} 
+                 → fun-ext (λ s → cong (λ b → proj₁ (st s) , b) eq) }
+
+state-η : (S : Set) → NaturalTransformation Categories.Functor.id (state-functor S)
+state-η S = record { 
+  η           = λ X → λ x → λ s → s , x; 
+  commute     = λ _ → refl ; 
+  sym-commute = λ _ → refl }  
+
+state-µ : (S : Set) → NaturalTransformation 
+                       (state-functor S ∘F state-functor S) 
+                       (state-functor S)
+state-µ S = record { 
+  η           = η-aux ;
+  commute     = λ _ → refl ; 
+  sym-commute = λ _ → refl }
+  where
+    η-aux : (X : Set) → (S → Σ S (λ x → S → Σ S (λ x₁ → X))) 
+            → S → Σ S (λ x → X)
+    η-aux X st s with st s
+    η-aux X st s | s' , st' = st' s'
 
 state-monad : (S : Set) → Monad Sets0
 state-monad S = record { 
   F         = state-functor S ; 
-  η         = {!   !} ; 
-  μ         = {!   !} ; 
-  assoc     = {!   !} ; 
-  sym-assoc = {!   !} ; 
-  identityˡ = {!   !} ; 
-  identityʳ = {!   !} }
-  
+  η         = state-η S ; 
+  μ         = state-µ S ; 
+  assoc     = refl ; 
+  sym-assoc = refl ; 
+  identityˡ = refl ; 
+  identityʳ = refl }
+   
