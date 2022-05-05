@@ -15,7 +15,7 @@ open Eq.≡-Reasoning               using (begin_; _≡⟨⟩_; step-≡; _∎)
 
 open import Data.Product          using (Σ; _,_; proj₁; proj₂; Σ-syntax; _×_)
 
-open import SetMonoid             using (Monoid; RightAct)
+open import Monoids             using (Monoid; RightAction)
 
 open import Axiom.Extensionality.Propositional using (Extensionality)
 postulate fun-ext : ∀ {a b} → Extensionality a b
@@ -49,7 +49,7 @@ update-η S P = record {
 
 update-µ : (S : Set) 
            → (P : Monoid {lzero}) 
-           → (A : RightAct P S)
+           → (A : RightAction P S)
            → NaturalTransformation 
              (update-functor S P ∘F update-functor S P)
              (update-functor S P)
@@ -60,7 +60,7 @@ update-µ S P A = record {
   sym-commute = λ _ → refl }
   where 
     open Monoid P
-    open RightAct A
+    open RightAction A
 
     η-aux : (X : Set) 
             → (S → Σ M (λ x → S → Σ M (λ x₁ → X))) 
@@ -71,20 +71,20 @@ update-µ S P A = record {
                
 update-monad : (S : Set) 
                → (P : Monoid {lzero}) 
-               → (A : RightAct P S) 
+               → (A : RightAction P S) 
                → Monad Sets0
 
 update-monad S P A = record { 
   F         = update-functor S P ; 
   η         = update-η S P ; 
   μ         = update-µ S P A ; 
-  assoc     = λ {X} {u} → fun-ext (λ s → update-assoc-aux u s) ; 
-  sym-assoc = λ {X} {u} → fun-ext (λ s → sym (update-assoc-aux u s)) ; 
-  identityˡ = λ {X} {u} → fun-ext (λ s → update-identityˡ u s) ; 
-  identityʳ = λ {X} {u} → fun-ext (λ s → update-identityʳ u s) }
+  assoc     = λ {_} {u} → fun-ext (λ s → update-assoc-aux u s) ; 
+  sym-assoc = λ {_} {u} → fun-ext (λ s → sym (update-assoc-aux u s)) ; 
+  identityˡ = λ {_} {u} → fun-ext (λ s → update-identityˡ u s) ; 
+  identityʳ = λ {_} {u} → fun-ext (λ s → update-identityʳ u s) }
   where
     open Monoid P
-    open RightAct A
+    open RightAction A
 
     update-assoc-aux : {X : Set} →
                        (u : S → Σ M (λ x₁ → S → Σ M (λ x₂ → S → Σ M (λ x₃ → X)))) →
@@ -109,10 +109,10 @@ update-monad S P A = record {
                            (s ↓ proj₁ (u s) ⊕ proj₁ (proj₂ (u s) (s ↓ proj₁ (u s))))))
 
     update-assoc-aux u s with u s
-    update-assoc-aux u s | p' , u' with u' (s ↓ p')
-    update-assoc-aux u s | p' , u' | p'' , u''
-      rewrite homomorphism p' p'' s 
-      rewrite ⊕-assoc p' p'' (proj₁ (u'' (s ↓ p' ↓ p''))) = refl
+    update-assoc-aux u s | p₁ , u' with u' (s ↓ p₁)
+    update-assoc-aux u s | p₁ , u' | p₂ , u'' 
+      rewrite homomorphism p₁ p₂ s 
+      rewrite ⊕-assoc p₁ p₂ (proj₁ (u'' (s ↓ p₁ ↓ p₂))) = refl
 
     update-identityˡ : {X : Set}
                        (u : S → Σ M (λ x → X))
@@ -129,3 +129,5 @@ update-monad S P A = record {
     update-identityʳ u s 
       rewrite ε-identity s
       rewrite ε-left (proj₁ (u s)) = refl 
+
+ 

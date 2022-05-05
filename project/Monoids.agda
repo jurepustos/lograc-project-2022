@@ -1,4 +1,4 @@
-module SetMonoid where
+module Monoids where
 
 open import Level renaming (zero to lzero; suc to lsuc)
 
@@ -19,7 +19,7 @@ record Monoid {l} : Set (lsuc l) where
     ε-right : (m : M) → m ⊕ ε ≡ m
     ⊕-assoc : (m₁ m₂ m₃ : M) → (m₁ ⊕ m₂) ⊕ m₃ ≡ m₁ ⊕ (m₂ ⊕ m₃)
 
-record RightAct {l} (Mon : Monoid {l}) (X : Set) : Set (lsuc l) where
+record RightAction {l} (Mon : Monoid {l}) (X : Set) : Set (lsuc l) where
   open Monoid Mon
 
   infixl 6 _↓_
