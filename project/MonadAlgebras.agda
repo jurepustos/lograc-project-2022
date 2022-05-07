@@ -1,4 +1,4 @@
-module MonadAlgebra where
+module MonadAlgebras where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
 open import Categories.Category
@@ -47,19 +47,19 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
   open RightAction A
 
   update-monad-algebra : (X : Set) 
-                        (α : (S → Monoid.M P × X) → X)
-                        (id : (x : X) → α (λ _ → ε , x) ≡ x)
-                        (hom : (x : S → Σ M (λ x₁ → S → Σ M (λ x₂ → X))) →
-                               α (λ s →
-                                proj₁ (x s) ⊕ proj₁ (proj₂ (x s) (s ↓ proj₁ (x s))) ,
-                                proj₂ (proj₂ (x s) (s ↓ proj₁ (x s))))
-                               ≡ α (λ s → proj₁ (x s) , α (proj₂ (x s))))
-                        → MonadAlgebra
+                         (act : (S → M × X) → X)
+                         (id : (x : X) → act (λ _ → ε , x) ≡ x)
+                         (hom : (x : S → Σ M (λ _ → S → Σ M (λ _ → X))) →
+                          act (λ s →
+                            proj₁ (x s) ⊕ proj₁ (proj₂ (x s) (s ↓ proj₁ (x s))) ,
+                            proj₂ (proj₂ (x s) (s ↓ proj₁ (x s))))
+                            ≡ act (λ s → proj₁ (x s) , act (proj₂ (x s))))
+                         → MonadAlgebra
                         
-  update-monad-algebra X α id hom = record { 
+  update-monad-algebra X act id hom = record { 
     Mon            = U          ;
     A              = X          ; 
-    α              = α          ;
+    α              = act        ;
     η-identity     = fun-ext id ; 
     µ-homomorphism = fun-ext hom }
 
