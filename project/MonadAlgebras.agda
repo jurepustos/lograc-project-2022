@@ -49,11 +49,11 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
   update-monad-algebra : (X : Set) 
                          (act : (S → M × X) → X)
                          (id : (x : X) → act (λ _ → ε , x) ≡ x)
-                         (hom : (x : S → Σ M (λ _ → S → Σ M (λ _ → X))) →
+                         (hom : (ttx : S → M × (S → M × X)) →
                           act (λ s →
-                            proj₁ (x s) ⊕ proj₁ (proj₂ (x s) (s ↓ proj₁ (x s))) ,
-                            proj₂ (proj₂ (x s) (s ↓ proj₁ (x s))))
-                            ≡ act (λ s → proj₁ (x s) , act (proj₂ (x s))))
+                            proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
+                            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s))))
                          → MonadAlgebra
                         
   update-monad-algebra X act id hom = record { 

@@ -36,10 +36,11 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
     field
       identity : {x : X} → lookup (λ s → update (ε , x)) ≡ x 
       update-update : {p p' : M} {x : X} → update (p , (update (p' , x))) ≡ update ((p ⊕ p') , x)
-      lookup-update : {x : S → Σ M (λ _ → S → Σ M (λ _ → X))} → 
-                      lookup (λ s → 
-                        update ((proj₁ (x s)) , (lookup (λ s' → 
-                          proj₂ (proj₂ (x s) s'))))) 
-                      ≡ lookup (λ s → 
-                          update ((proj₁ (x s)) , (proj₂ (proj₂ (x s) (s ↓ proj₁ (x s))))))
+      lookup-update-lookup : {ttx : S → M × (S → M × X)} → 
+                             lookup (λ s → 
+                              update ((proj₁ (ttx s)) , (lookup (λ s' → 
+                                proj₂ (proj₂ (ttx s) s'))))) 
+                             ≡ lookup (λ s → 
+                                update ((proj₁ (ttx s)) , 
+                                (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))))
                           

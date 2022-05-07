@@ -29,23 +29,23 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S) (UpMonAlg : Upda
 
   module _ (act : (S → M × X) → X) 
            (id : (x : X) → act (λ _ → ε , x) ≡ x) 
-           (hom : (x : S → Σ M (λ _ → S → Σ M (λ _ → X))) →
+           (hom : (ttx : S → M × (S → M × X)) →
             act (λ s →
-              proj₁ (x s) ⊕ proj₁ (proj₂ (x s) (s ↓ proj₁ (x s))) ,
-              proj₂ (proj₂ (x s) (s ↓ proj₁ (x s))))
-            ≡ act (λ s → proj₁ (x s) , act (proj₂ (x s)))) where
+              proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
+              proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s)))) where
 
     MonAlg : MonadAlgebra
     MonAlg = update-monad-algebra S P A X act id hom
 
     open MonadAlgebra MonAlg 
 
-    lookup-equiv : {x : S → Σ M (λ _ → X)} → lookup (λ s → proj₂ (x s)) ≡ α (λ s → ε , proj₂ (x s))
+    lookup-equiv : {tx : S → M × X} → lookup (λ s → proj₂ (tx s)) ≡ α (λ s → ε , proj₂ (tx s))
     lookup-equiv = {!   !}
 
     update-equiv : {p : M} {x : X} → update (p , x) ≡ α (λ _ → p , x)
     update-equiv = {!   !}
 
-    comp-equiv : {x : S → Σ M (λ _ → X)} → α (λ s → x s) ≡ lookup (λ s → update (x s))
+    comp-equiv : {tx : S → M × X} → α (λ s → tx s) ≡ lookup (λ s → update (tx s))
     comp-equiv = {!   !}
   
