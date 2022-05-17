@@ -70,7 +70,7 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
             lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
               ≡⟨ cong lookup (fun-ext lookup-inside-aux) ⟩
             lookup (λ s → update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) 
-              ≡⟨ cong lookup (fun-ext lookup-update-aux) ⟩           
+              ≡⟨ sym (lookup-update-lookup (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z₁) , update (proj₂ (ttx z) z₁)))) ⟩           
             lookup (λ s → update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
           ∎
             where
@@ -83,29 +83,6 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
                 ≡⟨ sym (update-update (proj₁ (ttx s)) (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ⟩
                   update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
                 ∎ 
-              
-              lookup-update-aux : (s : S) → 
-                                    update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
-                                    update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁)))
-              lookup-update-aux s = 
-                begin
-                  update (proj₁ (ttx s) , update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                ≡⟨ cong update (sym (inside-lookup-update s)) ⟩
-                  update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁)))
-                ∎
-                where 
-                  inside-lookup-update : (s : S) →
-                                      (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))) ≡
-                                      (proj₁ (ttx s) , update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))  
-                                      
-                  inside-lookup-update s = 
-                    begin
-                      (proj₁ (ttx s), lookup (λ s₁ → update (proj₂ (ttx s) s₁))) 
-                    ≡⟨ {!   !} ⟩
-                      {!   !}
-                    ≡⟨ {!   !} ⟩
-                      (proj₁ (ttx s), update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                    ∎
 
 
     MonAlg-UpMonAlg : UpdateMonadAlgebra S P A X
