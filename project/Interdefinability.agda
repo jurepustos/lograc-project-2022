@@ -10,6 +10,8 @@ open Eq                           using (_≡_; refl; sym; trans; cong; cong₂;
 
 open import Data.Product          using (Σ; _,_; proj₁; proj₂; Σ-syntax; _×_)
 
+open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; step-≡˘; _∎)
+
 open import Monoids               using (Monoid; RightAction)
 open import UpdateMonad           using (update-monad)
 open import UpdateMonadAlgebras   using (UpdateMonadAlgebra)
@@ -63,8 +65,47 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
                              ≡ lookup (λ s →
                               update (proj₁ (ttx s) , 
                                 lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
-        µ-homomorphism-aux ttx = {!   !}
-
+        µ-homomorphism-aux ttx = 
+          begin
+            lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
+              ≡⟨ cong lookup (fun-ext lookup-inside-aux) ⟩
+            lookup (λ s → update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) 
+              ≡⟨ cong lookup (fun-ext lookup-update-aux) ⟩           
+            lookup (λ s → update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
+          ∎
+            where
+              lookup-inside-aux : (s : S) → 
+                                    update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) ≡
+                                    update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+              lookup-inside-aux s = 
+                begin 
+                  update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                ≡⟨ sym (update-update (proj₁ (ttx s)) (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ⟩
+                  update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+                ∎ 
+              
+              lookup-update-aux : (s : S) → 
+                                    update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
+                                    update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁)))
+              lookup-update-aux s = 
+                begin
+                  update (proj₁ (ttx s) , update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                ≡⟨ cong update (sym (inside-lookup-update s)) ⟩
+                  update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁)))
+                ∎
+                where 
+                  inside-lookup-update : (s : S) →
+                                      (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))) ≡
+                                      (proj₁ (ttx s) , update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))  
+                                      
+                  inside-lookup-update s = 
+                    begin
+                      (proj₁ (ttx s), lookup (λ s₁ → update (proj₂ (ttx s) s₁))) 
+                    ≡⟨ {!   !} ⟩
+                      {!   !}
+                    ≡⟨ {!   !} ⟩
+                      (proj₁ (ttx s), update (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                    ∎
 
 
     MonAlg-UpMonAlg : UpdateMonadAlgebra S P A X
@@ -109,4 +150,4 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
         lookup-update-lookup-aux ttx = {!   !}
 
 
-                  
+                   
