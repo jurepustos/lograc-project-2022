@@ -111,20 +111,33 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
                             act (λ _ → p , 
                               act (λ _ → p' , x)) 
                             ≡ act (λ _ → p ⊕ p' , x)
-        update-update-aux p p' x = {!   !}
+        update-update-aux p p' x = 
+          begin
+            act (λ _ → p , act (λ _ → p' , x))
+          ≡⟨ sym (hom (λ z → p , (λ z₁ → p' , x))) ⟩
+            act (λ _ → p ⊕ p' , x)
+          ∎
 
         lookup-update-lookup-aux : (ttx : S → M × (S → M × X)) →
-                                   act (λ s →
-                                    ε ,
-                                    act
-                                    (λ _ → proj₁ (ttx s) , 
-                                      act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-                                   ≡ act (λ s →
-                                    ε ,
-                                    act
-                                    (λ _ → proj₁ (ttx s) , 
-                                      proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-        lookup-update-lookup-aux ttx = {!   !}
+                                   act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡ 
+                                   act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+        lookup-update-lookup-aux ttx = 
+          begin
+            act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+          ≡⟨ {! !} ⟩
+            act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+          ≡⟨ id (act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ⟩
+            act(λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
+          ≡⟨ sym (hom (λ z → proj₁ (ttx z) , (λ s₁ → ε , proj₂ (proj₂ (ttx z) s₁)))) ⟩
+            act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+          ≡⟨ sym (id (act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
+            act(λ _ → ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          ≡⟨ {! !} ⟩
+            act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          ∎
+          
+                                                       
+
 
 
                    
