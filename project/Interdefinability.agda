@@ -9,6 +9,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq                           using (_≡_; refl; sym; trans; cong; cong₂; subst; inspect)
 
 open import Data.Product          using (Σ; _,_; proj₁; proj₂; Σ-syntax; _×_)
+open import Data.Product.Properties using (,-injective)
 
 open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; step-≡˘; _∎)
 
@@ -124,7 +125,7 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
         lookup-update-lookup-aux ttx = 
           begin
             act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-          ≡⟨ {! !} ⟩
+          ≡⟨ sym (function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁)))) ⟩
             act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
           ≡⟨ id (act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ⟩
             act(λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
@@ -132,12 +133,30 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
             act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
           ≡⟨ sym (id (act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
             act(λ _ → ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-          ≡⟨ {! !} ⟩
+          ≡⟨ cong act (fun-ext unit-multiplication-aux) ⟩
+            act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          ≡⟨ other-function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁))) ⟩
             act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
           ∎
+            where
+              unit-multiplication-aux : (x : S) →  (ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
+                                                                       (ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+              unit-multiplication-aux x = 
+                begin
+                  ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                ≡⟨ cong₂ _,_ refl (cong act (fun-ext λ x₁ → cong₂ _,_ (ε-right (proj₁ (ttx x₁))) refl )) ⟩
+                  ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+                ∎
+
+              -- are the following equations even correct?
+              function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡
+                                                                act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+              function-comm-aux ttx = {!   !}
+
+              other-function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
+                                                                      act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+              other-function-comm-aux ttx = {!   !}
+            
+
           
-                                                       
-
-
-
-                   
+   
