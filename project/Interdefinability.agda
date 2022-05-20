@@ -122,6 +122,9 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
         lookup-update-lookup-aux : (ttx : S → M × (S → M × X)) →
                                    act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡ 
                                    act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+        
+{-
+        -- first attempt to prove this
         lookup-update-lookup-aux ttx = 
           begin
             act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
@@ -156,7 +159,19 @@ module _ (X S : Set) (P : Monoid {lzero}) (A : RightAction P S)
               other-function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
                                                                       act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
               other-function-comm-aux ttx = {!   !}
-            
+-}
+        -- second attempt to prove this
+        lookup-update-lookup-aux ttx = 
+          begin
+            act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+          ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ refl (sym (hom λ z → proj₁ (ttx s) , (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) )) ⟩
+            act (λ s → ε , act (λ z → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (z ↓ proj₁ (ttx s)))))
+          ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ refl (cong act (fun-ext (λ z → cong₂ _,_ (ε-right (proj₁ (ttx s))) refl)) ))) ⟩
+            act (λ s → ε , act (λ z → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (z ↓ proj₁ (ttx s)))))
+          ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ refl (cong act {!   !} ))) ⟩
+            act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          ∎
+
 
           
    
