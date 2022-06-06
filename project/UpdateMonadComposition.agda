@@ -68,20 +68,14 @@ module Action (S : Set) (P : Monoid {lzero}) where
       open DistributiveLaw dist-law
 
       ε-identity' : (s : S) 
-                  → proj₂ (θ.η S (ε , (λ x → x)) s) ≡ s
-      ε-identity' s = 
-        begin 
-          proj₂ (θ.η S (ε , (λ x → x)) s)
-        ≡⟨ {!   !} ⟩
-          {!   !}
-        ≡⟨ {!   !} ⟩
-          s
-        ∎
+                  → proj₂ (θ.η S (ε , id) s) ≡ s
+      ε-identity' s rewrite F₁-identity {S} {id} = refl
     
       homomorphism' : (m₁ m₂ : M) (s : S)
-                    → proj₂ (θ.η S (m₁ ⊕ m₂ , (λ x → x)) s) ≡
-                      proj₂ (θ.η S (m₂ , (λ x → x)) 
-                        (proj₂ (θ.η S (m₁ , (λ x → x)) s)))
-      homomorphism' m₁ m₂ s = {!   !}
+                    → proj₂ (θ.η S (m₁ ⊕ m₂ , id) s) ≡
+                      proj₂ (θ.η S (m₂ , id) 
+                        (proj₂ (θ.η S (m₁ , id) s)))
+      homomorphism' m₁ m₂ s = {!    !}
 
-      
+
+       
