@@ -26,7 +26,7 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
-module DistLaw (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
+module DistLawFromAction (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
   open Monoid P
   open RightAction A
   
@@ -50,7 +50,7 @@ module DistLaw (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
       fun-ext (λ s → cong₂ (λ p f → p , f) refl (cong (proj₂ (proj₂ m)) (homomorphism (proj₁ m) (proj₁ (proj₂ m)) s))) }
 
 
-module Action (S : Set) (P : Monoid {lzero}) where
+module ActionFromDistLaw (S : Set) (P : Monoid {lzero}) where
   open Monoid P
   
   reader : Monad Sets0

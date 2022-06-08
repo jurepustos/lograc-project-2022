@@ -85,9 +85,9 @@ module _ (Mon₁ Mon₂ : Monad Sets0) where
     identityˡ      = {!   !} ; 
     identityʳ      = {!   !} ; 
     F₁-η₂-morphism = refl ; 
-    F₂-η₁-morphism = {!   !} ; 
-    η₁-composition = {!   !} ; 
-    η₂-composition = {!   !} ; 
+    F₂-η₁-morphism = λ {X} → η₁.sym-commute {X} (η₂.η X) ; 
+    η₁-composition = λ {X} → {!   !} ; 
+    η₂-composition = λ {X} → {!   !} ; 
     middle-unity   = {!   !} }
     where 
       open DistributiveLaw dist-law
@@ -110,8 +110,8 @@ module _ (Mon₁ Mon₂ : Monad Sets0) where
   CompatibleComposition-DistributiveLaw : CompatibleComposition Mon₁ Mon₂ → DistributiveLaw Mon₁ Mon₂
   CompatibleComposition-DistributiveLaw composition = record { 
     θ            = θ' (µ ∘ᵥ ((η₁ ∘ʳ F₂) ∘ₕ (F₁ ∘ˡ η₂))) ; 
-    F₂-identity  = {!    !} ; 
-    F₁-identity  = {!    !} ; 
+    F₂-identity  = {!   !} ; 
+    F₁-identity  = {!   !} ; 
     F₁-transform = {!   !} ; 
     F₂-transform = {!   !} }
     where 
@@ -124,4 +124,4 @@ module _ (Mon₁ Mon₂ : Monad Sets0) where
         commute     = NaturalTransformation.commute nat ; 
         sym-commute = NaturalTransformation.sym-commute nat }
 
-      
+        
