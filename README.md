@@ -43,7 +43,7 @@ However, we also learn in the article, that algebras for update monads can also 
 
 ## Interdefinability
 
-Proofs, that both definitions of algebras of update monads are equivalent, are written in file `Interdefinability.agda`.
+Proofs, that both definitions of algebras of update monads are equivalent, are written in `UpdateMonadAlgebras.agda`.
 
 At first we proved, that a combination of *lookup* and *update* operations (specifically described in the article) suits as an *act* operation (by using some properties of *lookup* and *update*) for the first case of algebras of update monads.
 
@@ -51,9 +51,9 @@ Then we reversed the situation: we wrote *lookup* and *update* functions with *a
 
 ## Compatible compositions
 
-While state monads cannot be described as compatible compositions of reader and writer monads, update monads are exactly that. **Compatible composition** of two monads is described in file `CompatibleComposition.agda`. Distributive law of one monad over other is defined in `DistributiveLaw.agda`. 
+While state monads cannot be described as compatible compositions of reader and writer monads, update monads are exactly that. **Compatible composition** of two monads is described in file `CompatibleComposition.agda`. Distributive law of one monad over other is also defined there. 
 
-The idea is, that functor of the update monad is exactly a composition of functors of reader and writer monads. Distributive law of the writer monad over reader monad defines the right action for the update monad. This stil has to be implemented.
+The idea is that functor of the update monad is exactly a composition of functors of reader and writer monads. Distributive law of the writer monad over reader monad defines the right action for the update monad.
 
 ## Next steps
 
