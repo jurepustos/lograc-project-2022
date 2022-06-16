@@ -33,10 +33,10 @@ reader-η S = record {
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }  
 
-reader-µ : (S : Set) → NaturalTransformation 
+reader-μ : (S : Set) → NaturalTransformation 
                        (reader-functor S ∘F reader-functor S) 
                        (reader-functor S)
-reader-µ S = record { 
+reader-μ S = record { 
   η           = λ _ → λ r → λ s → r s s ; 
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }
@@ -45,7 +45,7 @@ reader-monad : (S : Set) → Monad Sets0
 reader-monad S = record { 
   F         = reader-functor S ; 
   η         = reader-η S ; 
-  μ         = reader-µ S ; 
+  μ         = reader-μ S ; 
   assoc     = refl ; 
   sym-assoc = refl ; 
   identityˡ = refl ; 

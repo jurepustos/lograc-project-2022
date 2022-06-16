@@ -62,7 +62,7 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
     A              = X          ; 
     α              = act        ;
     η-identity     = fun-ext id ; 
-    µ-homomorphism = fun-ext hom }
+    μ-homomorphism = fun-ext hom }
 
 
   module _ (X : Set) (UpMonAlg : UpdateMonadAlgebra X)
@@ -83,14 +83,14 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
       A              = X ; 
       α              = λ tx → lookup (λ s → update (tx s)) ; 
       η-identity     = fun-ext η-identity-aux ; 
-      µ-homomorphism = fun-ext µ-homomorphism-aux }
+      μ-homomorphism = fun-ext μ-homomorphism-aux }
       where 
         open UpdateMonadAlgebra UpMonAlg
 
         η-identity-aux : (x : X) → lookup (λ s → update (ε , x)) ≡ x
         η-identity-aux x = identity x
 
-        µ-homomorphism-aux : (ttx : S → M × (S → M × X)) →
+        μ-homomorphism-aux : (ttx : S → M × (S → M × X)) →
                              lookup (λ s →
                               update
                               (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
@@ -98,7 +98,7 @@ module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
                              ≡ lookup (λ s →
                               update (proj₁ (ttx s) , 
                                 lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
-        µ-homomorphism-aux ttx = 
+        μ-homomorphism-aux ttx = 
           begin
             lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
               ≡⟨ cong lookup (fun-ext lookup-inside-aux) ⟩

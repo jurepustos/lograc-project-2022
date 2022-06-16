@@ -34,7 +34,7 @@ record MonadAlgebra : Set (lsuc lzero) where
 
   field
     η-identity : α ∘ η.η A ≡ Function.id
-    µ-homomorphism : α ∘ μ.η A ≡ α ∘ F.F₁ α
+    μ-homomorphism : α ∘ μ.η A ≡ α ∘ F.F₁ α
 
 
 

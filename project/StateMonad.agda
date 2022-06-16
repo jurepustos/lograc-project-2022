@@ -38,10 +38,10 @@ state-η S = record {
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }  
 
-state-µ : (S : Set) → NaturalTransformation 
+state-μ : (S : Set) → NaturalTransformation 
           (state-functor S ∘F state-functor S) 
           (state-functor S)
-state-µ S = record { 
+state-μ S = record { 
   η           = η-aux ;
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }
@@ -55,7 +55,7 @@ state-monad : (S : Set) → Monad Sets0
 state-monad S = record { 
   F         = state-functor S ; 
   η         = state-η S ; 
-  μ         = state-µ S ; 
+  μ         = state-μ S ; 
   assoc     = refl ; 
   sym-assoc = refl ; 
   identityˡ = refl ; 

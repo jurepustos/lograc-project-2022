@@ -42,10 +42,10 @@ writer-η P = record {
   sym-commute = λ _ → refl }
   where open Monoid P
 
-writer-µ : (P : Monoid) → NaturalTransformation 
+writer-μ : (P : Monoid) → NaturalTransformation 
            (writer-functor P ∘F writer-functor P) 
            (writer-functor P)
-writer-µ P = record { 
+writer-μ P = record { 
   η           = λ X → λ { (p , (p' , x)) → (p ⊕ p') , x } ; 
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }
@@ -55,7 +55,7 @@ writer-monad : (P : Monoid {lzero}) → Monad Sets0
 writer-monad P = record { 
   F         = writer-functor P ; 
   η         = writer-η P ; 
-  μ         = writer-µ P ; 
+  μ         = writer-μ P ; 
   assoc     = writer-assoc ; 
   sym-assoc = sym writer-assoc ; 
   identityˡ = writer-identityˡ ; 

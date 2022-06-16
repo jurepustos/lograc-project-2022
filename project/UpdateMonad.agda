@@ -47,14 +47,14 @@ update-η S P = record {
   sym-commute = λ _ → refl }
   where open Monoid P
 
-update-µ : (S : Set) 
+update-μ : (S : Set) 
            → (P : Monoid {lzero}) 
            → (A : RightAction P S)
            → NaturalTransformation 
              (update-functor S P ∘F update-functor S P)
              (update-functor S P)
              
-update-µ S P A = record { 
+update-μ S P A = record { 
   η           = η-aux ; 
   commute     = λ _ → refl ; 
   sym-commute = λ _ → refl }
@@ -77,7 +77,7 @@ update-monad : (S : Set)
 update-monad S P A = record { 
   F         = update-functor S P ; 
   η         = update-η S P ; 
-  μ         = update-µ S P A ; 
+  μ         = update-μ S P A ; 
   assoc     = λ {_} {u} → fun-ext (λ s → update-assoc-aux u s) ; 
   sym-assoc = λ {_} {u} → fun-ext (λ s → sym (update-assoc-aux u s)) ; 
   identityˡ = λ {_} {u} → fun-ext (λ s → update-identityˡ u s) ; 
