@@ -54,11 +54,11 @@ module ActionFromDistLaw (S : Set) (P : Monoid {lzero}) where
   open Monoid P
   
   reader : Monad Sets0
-  reader = reader-monad S
+  reader = reader-monad S 
 
   writer : Monad Sets0
-  writer = writer-monad P
-
+  writer = writer-monad P 
+  
   action : DistributiveLaw reader writer → RightAction P S
   action dist-law = record { 
     _↓_          = λ s p → proj₂ (θ.η S (p , id) s) ; 
@@ -75,7 +75,34 @@ module ActionFromDistLaw (S : Set) (P : Monoid {lzero}) where
                     → proj₂ (θ.η S (m₁ ⊕ m₂ , id) s) ≡
                       proj₂ (θ.η S (m₂ , id) 
                         (proj₂ (θ.η S (m₁ , id) s)))
-      homomorphism' m₁ m₂ s = {!    !}
+      homomorphism' m₁ m₂ s = 
+        begin
+            proj₂ (θ.η S (m₁ ⊕ m₂ , id) s)
+          ≡⟨ refl ⟩
+            proj₂ ((θ.η S ∘ μ₁.η (T₀.F₀ S)) (m₁ , (m₂ , id)) s)
+          ≡⟨ cong (λ fun → proj₂ (fun s)) F₂-transform ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (θ.η S)) ((m₁ , (m₂ ,  id))) s)
+          ≡⟨ {!   !} ⟩ -- we need lemma 8 for this step
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) ((m₁ , λ (s₁ : S) → (m₂ , ((s₁ ↓' m₂))))) s) 
+          ≡⟨ refl ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) ((m₁ , id)) s) 
+          ≡⟨ {!   !} ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂))) ∘ θ.η S) ((m₁ , id)) s) 
+          ≡⟨ refl ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) (λ s₁ → (m₁ , (s₁ ↓' m₁))) s) 
+          ≡⟨ refl ⟩
+            proj₂ (T₀.F₁ (μ₁.η S) (λ s₁ → (m₁ , (m₂ , ((s₁ ↓' m₁) ↓' m₂)))) s)
+          ≡⟨ refl ⟩
+            proj₂ ((λ (s₁ : S) → ((m₁ ⊕ m₂) , ((s₁ ↓' m₁) ↓' m₂) )) s)
+          ≡⟨ refl ⟩
+            proj₂ (θ.η S (m₂ , id) (proj₂ (θ.η S (m₁ , id) s)))
+        ∎ 
+        where
+          open Monad writer renaming (F to T₁; η to η₁; μ to μ₁)
+          open Monad reader renaming (F to T₀; η to η₀; μ to μ₀)
+          
+          _↓'_ : S → M → S
+          _↓'_ s p = proj₂ (θ.η S (p , id) s)
 
 
-       
+          
