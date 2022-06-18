@@ -22,9 +22,9 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
+open Category Sets0 using (_≈_)
 
 record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where 
-  open Category Sets0 using (_≈_)
   open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
   open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
 
@@ -54,7 +54,6 @@ record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) wh
     middle-unity   : ∀ {X : Set} → μ.η X ∘ NaturalTransformation.η (F₁ ∘ˡ η₂ ∘ₕ η₁ ∘ʳ F₂) X ≈ id
     
 record DistributiveLaw (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where  
-  open Category Sets0 using (_≈_)
   open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
   open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
 
@@ -72,8 +71,6 @@ record DistributiveLaw (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where
 
 
 module _ (Mon₁ Mon₂ : Monad Sets0) where
-
-  open Category Sets0 using (_≈_)
   open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
   open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
   

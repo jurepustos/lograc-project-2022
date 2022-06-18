@@ -22,14 +22,10 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
-record MonadAlgebra : Set (lsuc lzero) where
-  field
-    Mon : Monad Sets0
-  
+record MonadAlgebra (Mon : Monad Sets0) (A : Set) : Set (lsuc lzero) where 
   open Monad Mon
 
   field
-    A : Set
     α : F.F₀ A → A
 
   field

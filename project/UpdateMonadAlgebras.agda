@@ -21,191 +21,173 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
-module _ (S : Set) (P : Monoid {lzero}) (A : RightAction P S) where
-
-  U : Monad Sets0
-  U = update-monad S P A
-  
-  open Monad U
+record UpdateMonadAlgebra (S : Set) (P : Monoid {lzero}) (A : RightAction P S) (X : Set) : Set (lsuc lzero) where
   open Monoid P
   open RightAction A
+  field
+    lookup : (S → X) → X
+    update : M × X → X
 
-  record UpdateMonadAlgebra (X : Set) : Set (lsuc lzero) where
-    field
-      lookup : (S → X) → X
-      update : M × X → X
-
-    field
-      identity : (x : X) → lookup (λ s → update (ε , x)) ≡ x 
-      update-update : (p p' : M) (x : X) → update (p , (update (p' , x))) ≡ update ((p ⊕ p') , x)
-      lookup-update-lookup : (ttx : S → M × (S → M × X)) → 
-                             lookup (λ s → 
-                              update ((proj₁ (ttx s)) , (lookup (λ s' → 
-                                proj₂ (proj₂ (ttx s) s'))))) 
-                             ≡ lookup (λ s → 
-                                update ((proj₁ (ttx s)) , 
-                                (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))))
+  field
+    identity : (x : X) → lookup (λ s → update (ε , x)) ≡ x 
+    update-update : (p p' : M) (x : X) → update (p , (update (p' , x))) ≡ update ((p ⊕ p') , x)
+    lookup-update-lookup : (ttx : S → M × (S → M × X)) → 
+                            lookup (λ s → 
+                            update ((proj₁ (ttx s)) , (lookup (λ s' → 
+                              proj₂ (proj₂ (ttx s) s'))))) 
+                            ≡ lookup (λ s → 
+                              update ((proj₁ (ttx s)) , 
+                              (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))))
 
 
-  update-monad-algebra : (X : Set) 
-                         (act : (S → M × X) → X)
-                         (id : (x : X) → act (λ _ → ε , x) ≡ x)
-                         (hom : (ttx : S → M × (S → M × X)) →
-                          act (λ s →
-                            proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
-                            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s))))
-                         → MonadAlgebra
-                        
-  update-monad-algebra X act id hom = record { 
-    Mon            = U          ;
-    A              = X          ; 
-    α              = act        ;
-    η-identity     = fun-ext id ; 
-    μ-homomorphism = fun-ext hom }
+UpMonAlg-to-MonAlg : {S : Set} {P : Monoid {lzero}} 
+                     {A : RightAction P S} {X : Set}
+                     → UpdateMonadAlgebra S P A X
+                     → MonadAlgebra (update-monad S P A) X
+UpMonAlg-to-MonAlg {S} {P} {A} {X} UpMonAlg = record {
+  α              = λ tx → lookup (λ s → update (tx s)) ; 
+  η-identity     = fun-ext η-identity-aux ; 
+  μ-homomorphism = fun-ext μ-homomorphism-aux }
+  where 
+    open Monoid P
+    open RightAction A
+    open UpdateMonadAlgebra UpMonAlg
 
+    η-identity-aux : (x : X) → lookup (λ s → update (ε , x)) ≡ x
+    η-identity-aux x = identity x
 
-  module _ (X : Set) (UpMonAlg : UpdateMonadAlgebra X)
-           (act : (S → M × X) → X) 
-           (id : (x : X) → act (λ _ → ε , x) ≡ x) 
-           (hom : (ttx : S → M × (S → M × X)) →
-            act (λ s →
-              proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
-              proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s)))) where
+    μ-homomorphism-aux : (ttx : S → M × (S → M × X)) →
+                          lookup (λ s →
+                          update
+                          (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
+                            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+                          ≡ lookup (λ s →
+                          update (proj₁ (ttx s) , 
+                            lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
+    μ-homomorphism-aux ttx = 
+      begin
+        lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
+          ≡⟨ cong lookup (fun-ext lookup-inside-aux) ⟩
+        lookup (λ s → update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) 
+          ≡⟨ sym (lookup-update-lookup (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z₁) , update (proj₂ (ttx z) z₁)))) ⟩           
+        lookup (λ s → update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
+      ∎
+        where
+          lookup-inside-aux : (s : S) → 
+                                update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) ≡
+                                update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          lookup-inside-aux s = 
+            begin 
+              update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ≡⟨ sym (update-update (proj₁ (ttx s)) (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ⟩
+              update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+            ∎ 
 
-    MonAlg : MonadAlgebra
-    MonAlg = update-monad-algebra X act id hom
+MonAlg-UpMonAlg : {S : Set} {P : Monoid {lzero}} 
+                  {A : RightAction P S} {X : Set} 
+                  → MonadAlgebra (update-monad S P A) X
+                  → UpdateMonadAlgebra S P A X
+MonAlg-UpMonAlg {S} {P} {A} {X} MonAlg = record { 
+  lookup               = lookup-aux ; 
+  update               = update-aux ; 
+  identity             = identity-aux ; 
+  update-update        = update-update-aux ; 
+  lookup-update-lookup = lookup-update-lookup-aux }
+  where
+    open Monoid P
+    open RightAction A
+    open MonadAlgebra MonAlg
 
-    UpMonAlg-MonAlg : MonadAlgebra
-    UpMonAlg-MonAlg = record { 
-      Mon            = U ; 
-      A              = X ; 
-      α              = λ tx → lookup (λ s → update (tx s)) ; 
-      η-identity     = fun-ext η-identity-aux ; 
-      μ-homomorphism = fun-ext μ-homomorphism-aux }
-      where 
-        open UpdateMonadAlgebra UpMonAlg
+    act : (S → M × X) → X
+    act = α
 
-        η-identity-aux : (x : X) → lookup (λ s → update (ε , x)) ≡ x
-        η-identity-aux x = identity x
+    id : (x : X) → act (λ _ → ε , x) ≡ x
+    id x = cong (λ f → f x) η-identity
 
-        μ-homomorphism-aux : (ttx : S → M × (S → M × X)) →
-                             lookup (λ s →
-                              update
-                              (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
-                                proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-                             ≡ lookup (λ s →
-                              update (proj₁ (ttx s) , 
-                                lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
-        μ-homomorphism-aux ttx = 
-          begin
-            lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
-              ≡⟨ cong lookup (fun-ext lookup-inside-aux) ⟩
-            lookup (λ s → update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) 
-              ≡⟨ sym (lookup-update-lookup (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z₁) , update (proj₂ (ttx z) z₁)))) ⟩           
-            lookup (λ s → update (proj₁ (ttx s) , lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
-          ∎
-            where
-              lookup-inside-aux : (s : S) → 
-                                    update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) ≡
-                                    update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-              lookup-inside-aux s = 
-                begin 
-                  update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                ≡⟨ sym (update-update (proj₁ (ttx s)) (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))) (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ⟩
-                  update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-                ∎ 
+    hom : (ttx : S → M × (S → M × X)) →
+          act (λ s →
+            proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
+            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s)))
+    hom ttx = cong (λ f → f ttx) μ-homomorphism
 
+    lookup-aux : (S → X) → X
+    lookup-aux f = act (λ s → ε , f s)
 
-    MonAlg-UpMonAlg : UpdateMonadAlgebra X
-    MonAlg-UpMonAlg = record { 
-      lookup               = lookup-aux ; 
-      update               = update-aux ; 
-      identity             = identity-aux ; 
-      update-update        = update-update-aux ; 
-      lookup-update-lookup = lookup-update-lookup-aux }
-      where
-        open MonadAlgebra MonAlg
+    update-aux : M × X → X
+    update-aux (p , x) = act (λ _ → p , x)
 
-        lookup-aux : (S → X) → X
-        lookup-aux f = act (λ s → ε , f s)
+    identity-aux : (x : X) →  act (λ s → ε , act (λ s₁ → ε , x)) ≡ x
+    identity-aux x 
+      rewrite id x 
+      rewrite id x = refl
 
-        update-aux : M × X → X
-        update-aux (p , x) = act (λ _ → p , x)
+    update-update-aux : (p p' : M) 
+                        (x : X) →
+                        act (λ _ → p , 
+                          act (λ _ → p' , x)) 
+                        ≡ act (λ _ → p ⊕ p' , x)
+    update-update-aux p p' x = 
+      begin
+        act (λ _ → p , act (λ _ → p' , x))
+      ≡⟨ sym (hom (λ z → p , (λ z₁ → p' , x))) ⟩
+        act (λ _ → p ⊕ p' , x)
+      ∎
 
-        identity-aux : (x : X) →  act (λ s → ε , act (λ s₁ → ε , x)) ≡ x
-        identity-aux x 
-          rewrite id x 
-          rewrite id x = refl
+    lookup-update-lookup-aux : (ttx : S → M × (S → M × X)) →
+                                act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡ 
+                                act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+    
+    lookup-update-lookup-aux ttx = 
+      begin
+        act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+      ≡⟨ sym (function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁)))) ⟩
+        act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+      ≡⟨ id (act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ⟩
+        act(λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
+      ≡⟨ sym (hom (λ z → proj₁ (ttx z) , (λ s₁ → ε , proj₂ (proj₂ (ttx z) s₁)))) ⟩
+        act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+      ≡⟨ sym (id (act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
+        act(λ _ → ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+      ≡⟨ cong act (fun-ext unit-multiplication-aux) ⟩
+        act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+      ≡⟨ other-function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁))) ⟩
+        act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+      ∎
+        where
+          unit-multiplication-aux : (x : S) →  (ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
+                                                                    (ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          unit-multiplication-aux x = 
+            begin
+              ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ≡⟨ cong₂ _,_ refl (cong act (fun-ext λ x₁ → cong₂ _,_ (ε-right (proj₁ (ttx x₁))) refl )) ⟩
+              ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ∎
 
-        update-update-aux : (p p' : M) 
-                            (x : X) →
-                            act (λ _ → p , 
-                              act (λ _ → p' , x)) 
-                            ≡ act (λ _ → p ⊕ p' , x)
-        update-update-aux p p' x = 
-          begin
-            act (λ _ → p , act (λ _ → p' , x))
-          ≡⟨ sym (hom (λ z → p , (λ z₁ → p' , x))) ⟩
-            act (λ _ → p ⊕ p' , x)
-          ∎
+          function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡
+                                                            act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+          function-comm-aux ttx = 
+            begin
+              act (λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+            ≡⟨ sym (hom λ z → ε , (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))) ) ⟩
+              act (λ s → ε ⊕ proj₁ (ttx (s ↓ ε)) , act (λ s₁ → ε , proj₂ (proj₂ (ttx (s ↓ ε)) s₁)))
+            ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ (cong₂ _⊕_ refl (cong proj₁ (cong ttx (ε-identity s)))) (
+                    cong act (fun-ext (λ s₁ → cong₂ _,_ refl (cong (λ s → proj₂ (proj₂ (ttx s) s₁)) (ε-identity s)) ))))) ⟩
+              act (λ s → ε ⊕ proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
+            ≡⟨ hom (λ z → ε , (λ _ → proj₁ (ttx z) , act (λ s₁ → ε , proj₂ (proj₂ (ttx z) s₁)))) ⟩
+              act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
+            ∎
 
-        lookup-update-lookup-aux : (ttx : S → M × (S → M × X)) →
-                                   act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡ 
-                                   act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-        
-        lookup-update-lookup-aux ttx = 
-          begin
-            act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-          ≡⟨ sym (function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁)))) ⟩
-            act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-          ≡⟨ id (act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ⟩
-            act(λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
-          ≡⟨ sym (hom (λ z → proj₁ (ttx z) , (λ s₁ → ε , proj₂ (proj₂ (ttx z) s₁)))) ⟩
-            act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-          ≡⟨ sym (id (act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
-            act(λ _ → ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-          ≡⟨ cong act (fun-ext unit-multiplication-aux) ⟩
-            act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-          ≡⟨ other-function-comm-aux (λ z → proj₁ (ttx z) , (λ z₁ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) z₁))) ⟩
-            act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-          ∎
-            where
-              unit-multiplication-aux : (x : S) →  (ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
-                                                                       (ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-              unit-multiplication-aux x = 
-                begin
-                  ε , act (λ s → proj₁ (ttx s) ⊕ ε , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                ≡⟨ cong₂ _,_ refl (cong act (fun-ext λ x₁ → cong₂ _,_ (ε-right (proj₁ (ttx x₁))) refl )) ⟩
-                  ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                ∎
-
-              function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))) ≡
-                                                                act(λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-              function-comm-aux ttx = 
-                begin
-                  act (λ _ → ε , act (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-                ≡⟨ sym (hom λ z → ε , (λ s → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))) ) ⟩
-                  act (λ s → ε ⊕ proj₁ (ttx (s ↓ ε)) , act (λ s₁ → ε , proj₂ (proj₂ (ttx (s ↓ ε)) s₁)))
-                ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ (cong₂ _⊕_ refl (cong proj₁ (cong ttx (ε-identity s)))) (
-                        cong act (fun-ext (λ s₁ → cong₂ _,_ refl (cong (λ s → proj₂ (proj₂ (ttx s) s₁)) (ε-identity s)) ))))) ⟩
-                  act (λ s → ε ⊕ proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁)))
-                ≡⟨ hom (λ z → ε , (λ _ → proj₁ (ttx z) , act (λ s₁ → ε , proj₂ (proj₂ (ttx z) s₁)))) ⟩
-                  act (λ s → ε , act (λ _ → proj₁ (ttx s) , act (λ s₁ → ε , proj₂ (proj₂ (ttx s) s₁))))
-                ∎
-
-              other-function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
-                                                                      act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-              other-function-comm-aux ttx = 
-                begin
-                  act (λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-                ≡⟨ sym (hom (λ z → ε , (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
-                  act (λ s → ε ⊕ proj₁ (ttx (s ↓ ε)) , proj₂ (proj₂ (ttx (s ↓ ε)) (s ↓ ε ↓ proj₁ (ttx (s ↓ ε)))))
-                ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ (cong₂ _⊕_ refl (cong proj₁ (cong ttx (ε-identity s)))) 
-                        (cong (λ x →  proj₂ (proj₂ (ttx x) (x ↓ proj₁ (ttx x)))) (ε-identity s)) )) ⟩
-                  act (λ s → ε ⊕ proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-                ≡⟨ hom (λ z → ε , (λ _ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) (z ↓ proj₁ (ttx z))))) ⟩
-                  act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
-                ∎
- 
+          other-function-comm-aux : (ttx : S → M × (S → M × X)) → act(λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) ≡
+                                                                  act(λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+          other-function-comm-aux ttx = 
+            begin
+              act (λ _ → ε , act (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+            ≡⟨ sym (hom (λ z → ε , (λ s → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))) ⟩
+              act (λ s → ε ⊕ proj₁ (ttx (s ↓ ε)) , proj₂ (proj₂ (ttx (s ↓ ε)) (s ↓ ε ↓ proj₁ (ttx (s ↓ ε)))))
+            ≡⟨ cong act (fun-ext (λ s → cong₂ _,_ (cong₂ _⊕_ refl (cong proj₁ (cong ttx (ε-identity s)))) 
+                    (cong (λ x →  proj₂ (proj₂ (ttx x) (x ↓ proj₁ (ttx x)))) (ε-identity s)) )) ⟩
+              act (λ s → ε ⊕ proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
+            ≡⟨ hom (λ z → ε , (λ _ → proj₁ (ttx z) , proj₂ (proj₂ (ttx z) (z ↓ proj₁ (ttx z))))) ⟩
+              act (λ s → ε , act (λ _ → proj₁ (ttx s) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+            ∎
