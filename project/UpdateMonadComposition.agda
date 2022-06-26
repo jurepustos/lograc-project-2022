@@ -75,7 +75,7 @@ action-from-dist-law {S} {P} dist-law = record {
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) ((m₁ , λ (s₁ : S) → (m₂ , ((s₁ ↓' m₂))))) s) 
         ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) ((m₁ , id)) s) 
-        ≡⟨ {!   !} ⟩
+        ≡⟨ θ-naturality s m₁ m₂ ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂))) ∘ θ.η S) ((m₁ , id)) s) 
         ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) (λ s₁ → (m₁ , (s₁ ↓' m₁))) s) 
@@ -93,5 +93,19 @@ action-from-dist-law {S} {P} dist-law = record {
         _↓'_ : S → M → S
         _↓'_ s p = proj₂ (θ.η S (p , id) s)
 
+        θ-naturality : (s : S) (m₁ m₂ : M) → proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) ((m₁ , id)) s) ≡
+                            proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂))) ∘ θ.η S) ((m₁ , id)) s) 
+        θ-naturality s m₁ m₂ = 
+          begin 
+            proj₂((T₀.F₁ (μ₁.η S) ∘  θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (m₁ , id) s)
+          ≡⟨ refl ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘  θ.η (T₁.F₀ S)) (m₁ , (T₀.F₁ (λ s' → m₂ , (s' ↓' m₂)) id)) s)
+          ≡⟨ {!   !} ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S)) (λ s' → m₁ , (m₂ , (((s' ↓' m₁) ↓' m₂)))) s)
+          ≡⟨ refl ⟩
+            proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (λ s' → (m₁ , id (s' ↓' m₁))) s)
+          ≡⟨ refl ⟩
+            proj₂((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂))) ∘ θ.η S) (m₁ , id) s)
+          ∎
 
-        
+           
