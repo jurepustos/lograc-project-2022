@@ -1,4 +1,3 @@
-{-# OPTIONS --allow-unsolved-metas #-} 
 module MonadComposition where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
@@ -68,57 +67,5 @@ record DistributiveLaw (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where
     F₁-transform : ∀ {X : Set} → θ.η X ∘ F₂.F₁ (μ₁.η X) ≈ μ₁.η (F₂.F₀ X) ∘ F₁.F₁ (θ.η X) ∘ θ.η (F₁.F₀ X)
     F₂-transform : ∀ {X : Set} → θ.η X ∘ μ₂.η (F₁.F₀ X) ≈ F₁.F₁ (μ₂.η X) ∘ θ.η (F₂.F₀ X) ∘ F₂.F₁ (θ.η X)
 
-
-
-module _ (Mon₁ Mon₂ : Monad Sets0) where
-  open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
-  open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
-  
-  DistributiveLaw-CompatibleComposition : DistributiveLaw Mon₁ Mon₂ → CompatibleComposition Mon₁ Mon₂
-  DistributiveLaw-CompatibleComposition dist-law = record { 
-    μ              = μ' ((μ₁ ∘ₕ μ₂) ∘ᵥ θ' (F₁ ∘ˡ θ ∘ʳ F₂)) ;
-    assoc          = {!   !} ; 
-    sym-assoc      = {!   !} ; 
-    identityˡ      = {!   !} ; 
-    identityʳ      = {!   !} ; 
-    F₁-η₂-morphism = refl ; 
-    F₂-η₁-morphism = λ {X} → η₁.sym-commute {X} (η₂.η X) ; 
-    η₁-composition = λ {X} → {!   !} ; 
-    η₂-composition = λ {X} → {!   !} ; 
-    middle-unity   = {!   !} }
-    where 
-      open DistributiveLaw dist-law
-
-      θ' : NaturalTransformation (F₁ ∘F (F₂ ∘F F₁) ∘F F₂) (F₁ ∘F (F₁ ∘F F₂) ∘F F₂)
-         → NaturalTransformation (F₁ ∘F (F₂ ∘F F₁) ∘F F₂) ((F₁ ∘F F₁) ∘F F₂ ∘F F₂)
-      θ' nat = record { 
-        η           = NaturalTransformation.η nat ; 
-        commute     = NaturalTransformation.commute nat ; 
-        sym-commute = NaturalTransformation.sym-commute nat }
-
-      μ' : NaturalTransformation (F₁ ∘F (F₂ ∘F F₁) ∘F F₂) (F₁ ∘F F₂)
-         → NaturalTransformation ((F₁ ∘F F₂) ∘F F₁ ∘F F₂) (F₁ ∘F F₂)
-      μ' nat = record { 
-        η           = NaturalTransformation.η nat ; 
-        commute     = NaturalTransformation.commute nat ; 
-        sym-commute = NaturalTransformation.sym-commute nat }
-
-
-  CompatibleComposition-DistributiveLaw : CompatibleComposition Mon₁ Mon₂ → DistributiveLaw Mon₁ Mon₂
-  CompatibleComposition-DistributiveLaw composition = record { 
-    θ            = θ' (μ ∘ᵥ ((η₁ ∘ʳ F₂) ∘ₕ (F₁ ∘ˡ η₂))) ; 
-    F₂-identity  = {!   !} ; 
-    F₁-identity  = {!   !} ; 
-    F₁-transform = {!   !} ; 
-    F₂-transform = {!   !} }
-    where 
-      open CompatibleComposition composition
-
-      θ' : NaturalTransformation ((idF ∘F F₂) ∘F F₁ ∘F idF) (F₁ ∘F F₂)
-         → NaturalTransformation (F₂ ∘F F₁) (F₁ ∘F F₂)
-      θ' nat = record { 
-        η           = NaturalTransformation.η nat ; 
-        commute     = NaturalTransformation.commute nat ; 
-        sym-commute = NaturalTransformation.sym-commute nat }
 
         
