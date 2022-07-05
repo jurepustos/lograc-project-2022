@@ -21,13 +21,13 @@ Representation of monoid and right action (used for update monads) is written in
 
 ## Classic families of monads
 
-Firstly, we formulised the three classic families of monads, used in functional programming: the reader, writer and state monads. Each of this monads has a separate file (module). We are not going to provied detailed description of them, as you can read everything you need in the original [article](https://drops.dagstuhl.de/opus/volltexte/2014/4623/pdf/p001-01-ahman.pdf).
+Firstly, we formulised the three classic families of monads, used in functional programming: the reader, writer and state monads. Each of this monads has a separate file (module). We are not going to provied detailed description of them here, as you can read everything you need in the original [article](https://drops.dagstuhl.de/opus/volltexte/2014/4623/pdf/p001-01-ahman.pdf).
 
-**Reader monads** are defined in file `ReaderMonad.agda`. Reader monads are defined by every set of states. In real life (mostly `Haskell`), reader monads are used for representing a computation, which can read values from a shared environment, pass values from function to function, and execute sub-computations in a modified environment. 
+**Reader monads** are defined in file `ReaderMonad.agda`. 
 
-**Writer monads** are defined in file `WriterMonad.agda`. Writer monads are definied by a monoid. The writer monad represents computations which produce a stream of data in addition to the computed values. It is commonly used by code generators to emit code.
+**Writer monads** are defined in file `WriterMonad.agda`.
 
-**State monads** are again defined by a state. State monads are formulised in file `StateMonad.agda`. The State monad wraps computations in the context of reading and modifying a global state object.
+**State monads** are formulised in file `StateMonad.agda`.
 
 In simpler words, the *reader monad* has a global value we could read from, but not modify, *writer monad* allows us to modify a value by appending, through we can't directly read it during the compuation. *State monad* is a combination of both reader and writer monads.
 
@@ -39,7 +39,7 @@ Update monads are coded in file `UpdateMonad.agda`. Update monads are generated 
 
 Algebras of update monads are described in Appendix A2 of the original [article](https://drops.dagstuhl.de/opus/volltexte/2014/4623/pdf/p001-01-ahman.pdf). Algebra for the update monad is a set with an operation, called **act**. Such algebra is formulised in file `MonadAlgebras.agda`.
 
-However, we also learn in the article, that algebras for update monads can also be presented with two operations, **update** and **lookup**. This representation is coded in file `UpdateMonadAlgebras.agda`.
+However, we also learn in the article, that algebras for update monads specifically can also be presented with two more intuitive operations, **update** and **lookup**. This representation is coded in file `UpdateMonadAlgebras.agda`.
 
 ## Interdefinability
 
@@ -51,12 +51,14 @@ Then we reversed the situation: we wrote *lookup* and *update* functions with *a
 
 ## Compatible compositions
 
-While state monads cannot be described as compatible compositions of reader and writer monads, update monads are exactly that. **Compatible composition** of two monads is described in file `CompatibleComposition.agda`. Distributive law of one monad over other is also defined there. 
+While state monads cannot be described as compatible compositions of reader and writer monads, update monads are exactly that. **Compatible composition** of two monads is definied in file `MonadComposition.agda`. Distributive law of one monad over other is also defined there. 
 
-The idea is that functor of the update monad is exactly a composition of functors of reader and writer monads. Distributive law of the writer monad over reader monad defines the right action for the update monad.
+The idea is that functor of the update monad is exactly a composition of functors of reader and writer monads. Distributive law of the writer monad over reader monad defines the right action for the update monad. Those properties are formulised in `UpdateMonadComposition.agda`.
 
-## Next steps
+## Examples
 
-Next steps for this project:
-- algebra of the update monad represented with operations from reader and writer monads
-- maps between monads (if there is time)
+Some special cases of update, reader and writer monads are described and formulised in `Examples.agda`:
+- reader monad as a special case of update monad
+- writer monad as a special case of update monad
+- update monad that does reader's and writer's jobs separately
+- a computation takes an initial state to the list of all intermediate states
