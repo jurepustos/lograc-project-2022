@@ -1,3 +1,8 @@
+-- in this file we are proving, that every compatible composition of the reader
+-- monad and the writer monad is an update monad, by proving, that distributive law
+-- of these two monads defines an action ↓
+-- on the other hand, also distrubutive law is defined by action ↓
+
 module UpdateMonadComposition where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
@@ -26,6 +31,7 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
+-- distributive law is determined by action ↓
 dist-law-from-action : {S : Set} → {P : Monoid {lzero}} 
             → (A : RightAction P S)
             → DistributiveLaw (reader-monad S) (writer-monad P)
@@ -44,7 +50,7 @@ dist-law-from-action {S} {P} A = record {
     open Monoid P
     open RightAction A
 
-
+-- distributive law defines a ↓ action
 action-from-dist-law : {S : Set} → {P : Monoid {lzero}} 
           → DistributiveLaw (reader-monad S) (writer-monad P)
           → RightAction P S
@@ -71,7 +77,7 @@ action-from-dist-law {S} {P} dist-law = record {
           proj₂ ((θ.η S ∘ μ₁.η (T₀.F₀ S)) (m₁ , (m₂ , id)) s)
         ≡⟨ cong (λ fun → proj₂ (fun s)) F₂-transform ⟩
           proj₂ (((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (θ.η S)) (m₁ , (m₂ ,  id))) s)
-        ≡⟨ {!   !} ⟩ -- def. of T₁, Lemma 8, def. of ↓
+        ≡⟨ {!   !} ⟩ -- def. of T₁, Lemma 8, def. of ↓, we need help here
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) (m₁ , (λ s' → (m₂ , s' ↓' m₂))) s)
         ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ (θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → (m₂ , s' ↓' m₂))))) (m₁ , id) s) 
@@ -99,11 +105,11 @@ action-from-dist-law {S} {P} dist-law = record {
         naturality-of-θ' s p m₂ = 
           begin
             (T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂))) ∘ θ.η S) (p , id) s
-          ≡⟨ {!   !} ⟩ -- def. of θ
+          ≡⟨ {!   !} ⟩ -- def. of θ, should be same reasoning as in proof of naturality below
             (T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (λ s → (p , id (s ↓' p))) s
           ≡⟨ refl ⟩
             (T₀.F₁ (μ₁.η S)) (λ s' → p , (m₂ , (((s' ↓' p) ↓' m₂)))) s
-          ≡⟨ {!   !} ⟩ -- def. of θ
+          ≡⟨ {!   !} ⟩ -- def. of θ, should be same reasoning as in proof of naturality below
             (T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) (p , id (λ s' → m₂ , (s' ↓' m₂))) s
           ≡⟨ refl ⟩
             (T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (p , id) s
@@ -113,16 +119,17 @@ action-from-dist-law {S} {P} dist-law = record {
         naturality-of-θ p g =
           begin
             (T₀.F₁ (T₁.F₁ g) ∘ θ.η S) (p , id)
-          ≡⟨ {!   !} ⟩ -- def. of θ
+          ≡⟨ {!   !} ⟩ -- def. of θ, we need help here
             (T₀.F₁ (T₁.F₁ g)) (λ s → (p , id (s ↓' p)))
           ≡⟨ refl ⟩
             (λ s → (p , g (id (s ↓' p))))
-          ≡⟨ {!  !} ⟩ -- def. of θ
+          ≡⟨ {!  !} ⟩ -- def. of θ, we need help here
             θ.η S (p , id g)
           ≡⟨ refl ⟩
             (θ.η S ∘ T₁.F₁ (T₀.F₁ g)) (p , id)
           ∎
 
+        -- lemma 8 from the article
         lemma-8 : (s : S) (p : M) → p ≡ proj₁ (θ.η S (p , id) s)
         lemma-8 s p =
           begin

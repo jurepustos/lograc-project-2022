@@ -1,3 +1,5 @@
+-- this file defines a type of monads, reader monads
+
 module ReaderMonad where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
