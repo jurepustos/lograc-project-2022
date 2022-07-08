@@ -77,11 +77,19 @@ action-from-dist-law {S} {P} dist-law = record {
           proj₂ ((θ.η S ∘ μ₁.η (T₀.F₀ S)) (m₁ , (m₂ , id)) s)
         ≡⟨ cong (λ fun → proj₂ (fun s)) F₂-transform ⟩
           proj₂ (((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (θ.η S)) (m₁ , (m₂ ,  id))) s)
-        ≡⟨ {!   !} ⟩ -- def. of T₁, Lemma 8, def. of ↓, we need help here
+        ≡⟨ refl ⟩ 
+          proj₂ (proj₂ (θ.η (Σ M (λ x → S)) (m₁ , θ.η S (m₂ , (λ x → x))) s))
+        ≡⟨ refl ⟩
+          proj₂ (proj₂ (θ.η (Σ M (λ x → S)) (m₁ , (λ s' → θ.η S (m₂ , id) s')) s))
+        ≡⟨ refl ⟩
+          proj₂ (proj₂ (θ.η (Σ M (λ x → S)) (m₁ , (λ s' → proj₁ (θ.η S (m₂ , id) s') , proj₂ (θ.η S (m₂ , id) s')) ) s))
+        ≡⟨ cong (λ lemma → proj₂ (proj₂ (θ.η (Σ M (λ x → S)) (m₁ , lemma) s))) (fun-ext aux-identity-projection) ⟩
+          proj₂ (proj₂ (θ.η (Σ M (λ x → S)) (m₁ , (λ s' → m₂ , proj₂ (θ.η S (m₂ , (λ x → x)) s'))) s))
+        ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) (m₁ , (λ s' → (m₂ , s' ↓' m₂))) s)
         ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ (θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → (m₂ , s' ↓' m₂))))) (m₁ , id) s) 
-        ≡⟨ cong (λ fun → proj₂ fun) (sym (naturality-of-θ' s m₁ m₂)) ⟩
+        ≡⟨ cong (λ fun → proj₂ ((T₀.F₁ (μ₁.η S) ∘ fun) (m₁ , id) s)) (fun-ext (λ y → θ.commute (λ s' → (m₂ , s' ↓' m₂)) {y})) ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ (T₀.F₁ (T₁.F₁ (λ s' → (m₂ , s' ↓' m₂))) ∘ θ.η S)) (m₁ , id) s) 
         ≡⟨ refl ⟩
           proj₂ ((T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' →  (m₂ , s' ↓' m₂)))) (λ s₁ → (m₁ , (s₁ ↓' m₁))) s) 
@@ -99,57 +107,28 @@ action-from-dist-law {S} {P} dist-law = record {
         _↓'_ : S → M → S
         _↓'_ s p = proj₂ (θ.η S (p , id) s)
 
-        naturality-of-θ' : (s : S) (m₁ m₂ : M) → 
-          (T₀.F₁ (μ₁.η S) ∘ (T₀.F₁ (T₁.F₁ (λ s' → (m₂ , s' ↓' m₂))) ∘ θ.η S)) (m₁ , id) s ≡
-          (T₀.F₁ (μ₁.η S) ∘ (θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → (m₂ , s' ↓' m₂))))) (m₁ , id) s
-        naturality-of-θ' s p m₂ = 
-          begin
-            (T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂))) ∘ θ.η S) (p , id) s
-          ≡⟨ {!   !} ⟩ -- def. of θ, should be same reasoning as in proof of naturality below
-            (T₀.F₁ (μ₁.η S) ∘ T₀.F₁ (T₁.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (λ s → (p , id (s ↓' p))) s
-          ≡⟨ refl ⟩
-            (T₀.F₁ (μ₁.η S)) (λ s' → p , (m₂ , (((s' ↓' p) ↓' m₂)))) s
-          ≡⟨ {!   !} ⟩ -- def. of θ, should be same reasoning as in proof of naturality below
-            (T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S)) (p , id (λ s' → m₂ , (s' ↓' m₂))) s
-          ≡⟨ refl ⟩
-            (T₀.F₁ (μ₁.η S) ∘ θ.η (T₁.F₀ S) ∘ T₁.F₁ (T₀.F₁ (λ s' → m₂ , (s' ↓' m₂)))) (p , id) s
-          ∎
-
-        naturality-of-θ : (p : M) (g : S → S) → (T₀.F₁ (T₁.F₁ g) ∘ θ.η S) (p , id) ≡ (θ.η S ∘ T₁.F₁ (T₀.F₁ g)) (p , id)
-        naturality-of-θ p g =
-          begin
-            (T₀.F₁ (T₁.F₁ g) ∘ θ.η S) (p , id)
-          ≡⟨ {!   !} ⟩ -- def. of θ, we need help here
-            (T₀.F₁ (T₁.F₁ g)) (λ s → (p , id (s ↓' p)))
-          ≡⟨ refl ⟩
-            (λ s → (p , g (id (s ↓' p))))
-          ≡⟨ {!  !} ⟩ -- def. of θ, we need help here
-            θ.η S (p , id g)
-          ≡⟨ refl ⟩
-            (θ.η S ∘ T₁.F₁ (T₀.F₁ g)) (p , id)
-          ∎
-
-        -- lemma 8 from the article
-        lemma-8 : (s : S) (p : M) → p ≡ proj₁ (θ.η S (p , id) s)
-        lemma-8 s p =
+      -- lemma 8 from the article
+        identity-projection : (s : S) (p : M) → p ≡ proj₁ (θ.η S (p , id) s)
+        identity-projection s p =
           begin
             p
           ≡⟨ refl ⟩
-            proj₁ ((λ s' → (p , _)) s)
+            proj₁ ((λ s' → (p , s')) s)
           ≡⟨ refl ⟩
-            proj₁ ( η₀.η (T₁.F₀ S) ((p , _)) s )
+            proj₁ ( η₀.η (T₁.F₀ S) (p , s) s )
           ≡⟨ cong (λ fun → proj₁ (fun s)) (sym F₂-identity) ⟩
             proj₁ ((θ.η S ∘ T₁.F₁ (η₀.η S)) ((p , _)) s)
           ≡⟨ refl ⟩
             proj₁ (θ.η S ((p , λ s' → _)) s)
           ≡⟨ refl ⟩
-            proj₁ ((θ.η S ∘ T₁.F₁ (T₀.F₁ (λ s' → _))) ((p , id)) s)
-          ≡⟨ cong (λ fun → proj₁ (fun s)) (sym (naturality-of-θ p (λ _ → s))) ⟩
-            proj₁ ((T₀.F₁ (T₁.F₁ (λ s' → _)) ∘ θ.η S) ((p , id)) s)
+            proj₁ ((θ.η S ∘ T₁.F₁ (T₀.F₁ (λ s' → _))) (p , id) s)
+          ≡⟨ cong (λ fun → proj₁ (fun s)) (θ.commute (λ _ → s)) ⟩
+            proj₁ ((T₀.F₁ (T₁.F₁ (λ s' → s')) ∘ θ.η S) (p , id) s)
           ≡⟨ refl ⟩
             proj₁ (θ.η S (p , id) s)
           ∎
-            
 
-
-              
+        aux-identity-projection : (x : S) →
+            (proj₁ (θ.η S (m₂ , id) x) , proj₂ (θ.η S (m₂ , id) x)) ≡ (m₂ , proj₂ (θ.η S (m₂ , (λ x₁ → x₁)) x))
+        aux-identity-projection x = cong₂ _,_ (sym (identity-projection x m₂)) refl
+                  
