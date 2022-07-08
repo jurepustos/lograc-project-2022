@@ -27,7 +27,7 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
--- We get the reader monad as a special case by using the unit monoid and action
+-- we get the reader monad as a special case by using the unit monoid and action
 ReaderMonad : (S : Set) → Monad Sets0
 ReaderMonad S = update-monad S P A
   where

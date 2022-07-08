@@ -1,3 +1,5 @@
+-- this file contains definition of monad algebras
+
 module MonadAlgebras where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
@@ -25,9 +27,11 @@ Sets0 = Sets lzero
 record MonadAlgebra (Mon : Monad Sets0) (A : Set) : Set (lsuc lzero) where 
   open Monad Mon
 
+  -- map α
   field
     α : F.F₀ A → A
 
+  -- conditions, that need to be satisfied
   field
     η-identity : α ∘ η.η A ≡ Function.id
     μ-homomorphism : α ∘ μ.η A ≡ α ∘ F.F₁ α

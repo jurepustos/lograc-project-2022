@@ -1,3 +1,5 @@
+-- in this file we define another type of monads, state monads
+
 module StateMonad where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)

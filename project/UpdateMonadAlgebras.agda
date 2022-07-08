@@ -1,3 +1,7 @@
+-- this file has (an alternative) definition for monad algebras, specifically
+-- for update monads: via operations lookup and update and also proof, that both
+-- definitions are the same
+
 module UpdateMonadAlgebras where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
@@ -21,6 +25,7 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
+
 action : {S : Set} {P : Monoid {lzero}} {X : Set} 
          → (ttx : S → Monoid.M P × (S → Monoid.M P × X)) → (s : S) → Monoid.M P
 action ttx s = proj₁ (ttx s)
@@ -33,13 +38,18 @@ element : {S : Set} {P : Monoid {lzero}} {X : Set}
           → (ttx : S → Monoid.M P × (S → Monoid.M P × X)) (s s' : S) → X
 element ttx s s' = proj₂ (proj₂ (ttx s) s')
 
+
+-- definition with lookup and update
 record UpdateMonadAlgebra (S : Set) (P : Monoid {lzero}) (A : RightAction P S) (X : Set) : Set (lsuc lzero) where
   open Monoid P
   open RightAction A
+
+  -- operations
   field
     lookup : (S → X) → X
     update : M × X → X
 
+  -- conditions
   field
     identity : (x : X) → lookup (λ s → update (ε , x)) ≡ x 
     update-update : (p p' : M) (x : X) → update (p , (update (p' , x))) ≡ update ((p ⊕ p') , x)
@@ -52,6 +62,7 @@ record UpdateMonadAlgebra (S : Set) (P : Monoid {lzero}) (A : RightAction P S) (
                               element {S} {P} ttx s (s ↓ action {S} {P} ttx s)))
                               
 
+-- proof, that algebra with lookup and update is also monad algebra (defined with α)
 UpMonAlg-MonAlg : {S : Set} {P : Monoid {lzero}} 
                   {A : RightAction P S} {X : Set}
                   → UpdateMonadAlgebra S P A X
@@ -95,6 +106,8 @@ UpMonAlg-MonAlg {S} {P} {A} {X} UpMonAlg = record {
               update (proj₁ (ttx s) , update (proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) , proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
             ∎ 
 
+-- proof, that monad algebra for update monad (with α) safisfies all conditions
+-- for update monad algebra (with lookup and update) 
 MonAlg-UpMonAlg : {S : Set} {P : Monoid {lzero}} 
                   {A : RightAction P S} {X : Set} 
                   → MonadAlgebra (update-monad S P A) X

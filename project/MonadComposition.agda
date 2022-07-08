@@ -1,3 +1,6 @@
+-- this file contains definition of compatible composition of two monads
+-- and definition of distributive law
+
 module MonadComposition where
 
 open import Level                 renaming (zero to lzero; suc to lsuc)
@@ -23,6 +26,7 @@ Sets0 = Sets lzero
 
 open Category Sets0 using (_≈_)
 
+-- compatible composition
 record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where 
   open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
   open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
@@ -33,6 +37,7 @@ record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) wh
   η : NaturalTransformation idF F
   η = η₁ ∘ₕ η₂
 
+  -- natural transformation μ
   field
     μ : NaturalTransformation (F ∘F F) F
 
@@ -40,7 +45,8 @@ record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) wh
   module η = NaturalTransformation η
   module μ = NaturalTransformation μ
 
-  field
+  -- conditions
+  field    
     assoc     : ∀ {X : Set} → μ.η X ∘ F.F₁ (μ.η X) ≈ μ.η X ∘ μ.η (F.F₀ X)
     sym-assoc : ∀ {X : Set} → μ.η X ∘ μ.η (F.F₀ X) ≈ μ.η X ∘ F.F₁ (μ.η X)
     identityˡ : ∀ {X : Set} → μ.η X ∘ F.F₁ (η.η X) ≈ id
@@ -52,15 +58,19 @@ record CompatibleComposition (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) wh
     η₂-composition : ∀ {X : Set} → F₁.F₁ (η₂.η X) ∘ μ₁.η X ≈ μ.η X ∘ NaturalTransformation.η (F₁ ∘ˡ η₂ ∘ₕ F₁ ∘ˡ η₂) X
     middle-unity   : ∀ {X : Set} → μ.η X ∘ NaturalTransformation.η (F₁ ∘ˡ η₂ ∘ₕ η₁ ∘ʳ F₂) X ≈ id
     
+
+-- distributive law
 record DistributiveLaw (Mon₁ Mon₂ : Monad Sets0) : Set (lsuc lzero) where  
   open Monad Mon₁ renaming (F to F₁; η to η₁; μ to μ₁)
   open Monad Mon₂ renaming (F to F₂; η to η₂; μ to μ₂)
 
+  -- natural transformation θ
   field
     θ : NaturalTransformation (F₂ ∘F F₁) (F₁ ∘F F₂)
 
   module θ = NaturalTransformation θ
 
+  -- conditions
   field
     F₂-identity  : ∀ {X : Set} → θ.η X ∘ F₂.F₁ (η₁.η X) ≈ η₁.η (F₂.F₀ X)
     F₁-identity  : ∀ {X : Set} → θ.η X ∘ η₂.η (F₁.F₀ X) ≈ F₁.F₁ (η₂.η X)
