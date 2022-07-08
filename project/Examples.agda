@@ -38,13 +38,13 @@ ReaderMonad S = update-monad S P A
       _⊕_     = λ _ _ → tt ; 
       ε-left   = λ { tt → refl } ; 
       ε-right  = λ { tt → refl } ; 
-      ⊕-assoc = λ { m₁ m₂ m₃ → refl } }
+      ⊕-assoc = λ p₁ p₂ p₃ → refl }
     
     A : RightAction P S
     A = record { 
-      _↓_          = λ z _ → z ; 
-      ε-identity   = λ x → refl ; 
-      homomorphism = λ m₁ m₂ x → refl }
+      _↓_          = λ s _ → s ; 
+      ε-identity   = λ s → refl ; 
+      homomorphism = λ p₁ p₂ s → refl }
 
 -- we get the writer monad as a special case by using the unit type for state
 WriterMonad : (P : Monoid {lzero}) → Monad Sets0
@@ -57,7 +57,7 @@ WriterMonad P = update-monad S P A
     A = record { 
       _↓_          = λ _ _ → tt ; 
       ε-identity   = λ { tt → refl } ; 
-      homomorphism = λ { m₁ m₂ x → refl } }
+      homomorphism = λ p₁ p₂ t → refl }
 
 -- by using the trivial action (s ↓ p = s), we get the update monad that 
 -- does reader and writer's job separately
@@ -66,9 +66,9 @@ TrivialActionUpdateMonad S P = update-monad S P A
   where
     A : RightAction P S
     A = record { 
-      _↓_          = λ z _ → z ; 
+      _↓_          = λ s _ → s ; 
       ε-identity   = λ x → refl ; 
-      homomorphism = λ m₁ m₂ x → refl }
+      homomorphism = λ p₁ p₂ s → refl }
 
 -- a computation takes an initial state to the list of all intermediate states
 ConcatMonad : (S : Set) → Monad Sets0

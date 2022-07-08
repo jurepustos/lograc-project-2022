@@ -21,6 +21,18 @@ postulate fun-ext : ∀ {a b} → Extensionality a b
 Sets0 : Category (lsuc lzero) lzero lzero
 Sets0 = Sets lzero
 
+action : {S : Set} {P : Monoid {lzero}} {X : Set} 
+         → (ttx : S → Monoid.M P × (S → Monoid.M P × X)) → (s : S) → Monoid.M P
+action ttx s = proj₁ (ttx s)
+
+element-action : {S : Set} {P : Monoid {lzero}} {X : Set} 
+          → (ttx : S → Monoid.M P × (S → Monoid.M P × X)) (s s' : S) → Monoid.M P
+element-action ttx s s' = proj₁ (proj₂ (ttx s) s')
+
+element : {S : Set} {P : Monoid {lzero}} {X : Set} 
+          → (ttx : S → Monoid.M P × (S → Monoid.M P × X)) (s s' : S) → X
+element ttx s s' = proj₂ (proj₂ (ttx s) s')
+
 record UpdateMonadAlgebra (S : Set) (P : Monoid {lzero}) (A : RightAction P S) (X : Set) : Set (lsuc lzero) where
   open Monoid P
   open RightAction A
@@ -33,18 +45,18 @@ record UpdateMonadAlgebra (S : Set) (P : Monoid {lzero}) (A : RightAction P S) (
     update-update : (p p' : M) (x : X) → update (p , (update (p' , x))) ≡ update ((p ⊕ p') , x)
     lookup-update-lookup : (ttx : S → M × (S → M × X)) → 
                             lookup (λ s → 
-                            update ((proj₁ (ttx s)) , (lookup (λ s' → 
-                              proj₂ (proj₂ (ttx s) s'))))) 
+                            update (action {S} {P} ttx s , (lookup (λ s' → 
+                              element {S} {P} ttx s s')))) 
                             ≡ lookup (λ s → 
-                              update ((proj₁ (ttx s)) , 
-                              (proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))))
+                              update (action {S} {P} ttx s , 
+                              element {S} {P} ttx s (s ↓ action {S} {P} ttx s)))
+                              
 
-
-UpMonAlg-to-MonAlg : {S : Set} {P : Monoid {lzero}} 
-                     {A : RightAction P S} {X : Set}
-                     → UpdateMonadAlgebra S P A X
-                     → MonadAlgebra (update-monad S P A) X
-UpMonAlg-to-MonAlg {S} {P} {A} {X} UpMonAlg = record {
+UpMonAlg-MonAlg : {S : Set} {P : Monoid {lzero}} 
+                  {A : RightAction P S} {X : Set}
+                  → UpdateMonadAlgebra S P A X
+                  → MonadAlgebra (update-monad S P A) X
+UpMonAlg-MonAlg {S} {P} {A} {X} UpMonAlg = record {
   α              = λ tx → lookup (λ s → update (tx s)) ; 
   η-identity     = fun-ext η-identity-aux ; 
   μ-homomorphism = fun-ext μ-homomorphism-aux }
@@ -58,12 +70,12 @@ UpMonAlg-to-MonAlg {S} {P} {A} {X} UpMonAlg = record {
 
     μ-homomorphism-aux : (ttx : S → M × (S → M × X)) →
                           lookup (λ s →
-                          update
-                          (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
-                            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s)))))
+                            update
+                            (action {S} {P} ttx s ⊕ element-action {S} {P} ttx s (s ↓ proj₁ (ttx s)) ,
+                              element {S} {P} ttx s (s ↓ proj₁ (ttx s))))
                           ≡ lookup (λ s →
-                          update (proj₁ (ttx s) , 
-                            lookup (λ s₁ → update (proj₂ (ttx s) s₁))))
+                          update (action {S} {P} ttx s , 
+                            lookup (λ s' → update (element-action {S} {P} ttx s s' , element {S} {P} ttx s s'))))
     μ-homomorphism-aux ttx = 
       begin
         lookup (λ s → update (proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))), proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))) 
@@ -106,9 +118,11 @@ MonAlg-UpMonAlg {S} {P} {A} {X} MonAlg = record {
 
     hom : (ttx : S → M × (S → M × X)) →
           act (λ s →
-            proj₁ (ttx s) ⊕ proj₁ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))) ,
-            proj₂ (proj₂ (ttx s) (s ↓ proj₁ (ttx s))))
-            ≡ act (λ s → proj₁ (ttx s) , act (proj₂ (ttx s)))
+            action {S} {P} ttx s ⊕ element-action {S} {P} ttx s (s ↓ action {S} {P} ttx s) ,
+            element {S} {P} ttx s (s ↓ proj₁ (ttx s)))
+            ≡ act (λ s → 
+              action {S} {P} ttx s , 
+                act λ s' → element-action {S} {P} ttx s s' , element {S} {P} ttx s s')
     hom ttx = cong (λ f → f ttx) μ-homomorphism
 
     lookup-aux : (S → X) → X
